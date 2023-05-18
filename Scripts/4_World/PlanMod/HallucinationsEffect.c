@@ -1,50 +1,51 @@
-class PL_HallucinationsEffect_CL: Managed 
-{
-    ref Timer PL_hallucinationTimer_Start;
-    ref Timer PL_hallucinationTimer_Stop;
-    static const int REQ_HALLUCTNATIONCOLOR	= PPERequesterBank.RegisterRequester(PL_PPERequester_HalucinationEffect);
+class PL_HallucinationsEffect: Managed {
+    // Класс-сервис для PlayerBase. По ваниле реализовано прям внутри player-a + класс. 
+    // Там они создают и удаляют объект такого класса, мб влияет как-то на оптимизацию, 
+    // но по идее это прям хуйня.. хз
+    // Я решил сторить сервис все время, но очищать от эффектов когда это необходимо.
+
+    // MARK: - Private Properties -----------------------------------------
+
+    private PlayerBase delegate;
     
-    void PL_SpawnHallucinationsEffect() 
-    {
-        
-        if (GetGame().IsClient())
-        {
-            if (!PL_hallucinationTimer_Start) {
-                PL_hallucinationTimer_Start = new Timer();
-            }
-            if (!PL_hallucinationTimer_Stop) {
-                PL_hallucinationTimer_Stop = new Timer();
-            }
-            Print("Spawning hallucinations effect.");
-            // float blur = 0.8;
-            // float factor = 0.2;
-            // float vignette = 0.4;
-            // Param3<float,float,float> m_EffectParam = new Param3<float,float,float>(blur, factor, vignette);
-            // PPERequesterBank.GetRequester(PPERequester_ShockHitReaction).Start(m_EffectParam);
+    // MARK: - Init -----------------------------------------
 
-            // Test with timers
-            // PPERequesterBank orangeEffect = new PPERequesterBank.GetRequester(PPERequester_GlassesSportOrange);
-            PL_hallucinationTimer_Start.Run(2, this, "Start", null, true);
-            PL_hallucinationTimer_Stop.Run(5, this, "Stop", null, true);
-        }
+    void PL_HallucinationsEffect(PlayerBase delegate) {
+        this.delegate = delegate;
     }
 
-    void Start() {
+    void ~PL_HallucinationsEffect() {
+        stop();
+    }
+
+    // MARK: - Public Methods -----------------------------------------
+
+    void SpawnEffect() {
+       start();
+    }
+
+    void DespawnEffect() {
+        stop();
+    }
+
+    void Update(float deltatime) {
+        Print("Update in effect - " +  deltatime.ToString());
+    }
+
+    // MARK: - Private Methods -----------------------------------------
+
+    private void setup() {
+        Print("Setting up the hallucinationEffect");
+    }
+
+    private void start() {
         Print("Start method is run.");
-        PPERequesterBank.GetRequester(REQ_HALLUCTNATIONCOLOR).Start();
+        PPERequesterBank.GetRequester(PL_PPERequester_HalucinationEffect).Start();
+        PPERequesterBank.GetRequester(PPERequester_FlashbangEffects).Start();
     }
 
-    void Stop() {
+    private void stop() {
         Print("Stop method is run.");
-        PPERequesterBank.GetRequester(REQ_HALLUCTNATIONCOLOR).Stop();
-    }
-
-    void PL_DespawnHallucinationsEffect()
-    {
-        if (GetGame().IsClient())
-        {
-            Print("Despawn hallucinations effect.");
-            PPERequesterBank.GetRequester(PPERequester_ShockHitReaction).Stop();
-        }
+        PPERequesterBank.GetRequester(PL_PPERequester_HalucinationEffect).Stop();
     }
 }
